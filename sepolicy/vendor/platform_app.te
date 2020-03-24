@@ -2,3 +2,7 @@ allow platform_app sysfs_fps:file { getattr open read };
 allow platform_app vendor_sysfs_graphics:dir search;
 
 allow platform_app zygote:unix_stream_socket { getopt };
+
+# Dolby
+allow platform_app hal_dms_hwservice:hwservice_manager find;
+allow platform_app hal_dms_default:binder { call transfer };

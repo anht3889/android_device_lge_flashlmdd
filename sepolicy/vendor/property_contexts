@@ -36,6 +36,10 @@ vendor.lge.faceprint.use.camera                     u:object_r:vendor_camera_pro
 persist.vendor.lge.audio.hifi_dac           u:object_r:vendor_audio_prop:s0
 persist.vendor.lge.audio.hifi_dac.          u:object_r:vendor_audio_prop:s0
 
+# Dolby
+persist.vendor.dolby.loglevel                   u:object_r:vendor_dolby_loglevel_prop:s0
+
+
 # LGE Misc
 ro.vendor.lge.build.target_country                  u:object_r:vendor_lge_misc_prop:s0
 ro.vendor.lge.build.target_operator                 u:object_r:vendor_lge_misc_prop:s0

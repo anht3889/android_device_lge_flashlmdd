@@ -12,3 +12,6 @@ vendor.nxp.eventprocessor::INxpEseEvtProcessor                          u:object
 vendor.nxp.nxpese::INxpEse                                              u:object_r:hal_nxpese_hwservice:s0
 vendor.nxp.nxpnfc::INxpNfc                                              u:object_r:hal_nxpnfc_hwservice:s0
 vendor.nxp.nxpnfclegacy::INxpNfcLegacy					                u:object_r:hal_nxpnfc_hwservice:s0
+
+# Dolby
+vendor.dolby.hardware.dms::IDms                                                          u:object_r:hal_dms_hwservice:s0

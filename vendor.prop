@@ -121,6 +121,10 @@ vendor.display.enable_optimize_refresh=1
 vendor.display.qdcm.disable_factory_mode=1
 vendor.display.qdcm.mode_combine=1
 
+# Dolby
+persist.vendor.audio_fx.current=dolby
+ro.vendor.dolby.dax.version=DS1_2.2.0.0_r1
+
 # DPM
 persist.vendor.dpm.feature=1
 persist.vendor.dpm.loglevel=0

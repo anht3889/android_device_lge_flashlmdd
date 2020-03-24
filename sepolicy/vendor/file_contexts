@@ -13,6 +13,9 @@
 /dev/pn547                u:object_r:nfc_device:s0
 /dev/tspdrv         	  u:object_r:vibrator_device:s0
 
+# Dolby
+/(vendor|system/vendor)/bin/hw/vendor\.dolby\.hardware\.dms@1\.0-service                     u:object_r:hal_dms_default_exec:s0
+
 # FPS Info
 /sys/devices/platform/soc/ae00000.qcom,mdss_mdp/drm/card0/sde-crtc-0/measured_fps                       u:object_r:sysfs_fps:s0
 

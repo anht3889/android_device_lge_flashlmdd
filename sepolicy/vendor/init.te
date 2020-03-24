@@ -26,3 +26,7 @@ allow init vendor_sysfs_kgsl:file { open read };
 allow init vendor_sysfs_kgsl:lnk_file read;
 allow init hal_powerhint_hwservice:hwservice_manager { add find };
 allow init hal_lgdata_hwservice:hwservice_manager { add find };
+
+# Dolby
+allow init vendor_data_file:file lock;
+allow init hal_audio_default:binder call;
