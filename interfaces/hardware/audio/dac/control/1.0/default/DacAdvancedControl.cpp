@@ -79,10 +79,12 @@ DacAdvancedControl::DacAdvancedControl() {
     
     if (avc) {
         mSupportedAdvancedFeatures.push_back(AdvancedFeature::AVCVolume);
+        writeAvcVolumeState(getAvcVolumeState());
     }
     
     if (hifi) {
         mSupportedAdvancedFeatures.push_back(AdvancedFeature::HifiMode);
+        writeHifiModeState(getHifiModeState());
     }
 
 }
@@ -165,6 +167,20 @@ Return<bool> DacAdvancedControl::setFeatureValue(AdvancedFeature feature, int32_
     return false;
 }
 
+int32_t DacAdvancedControl::getAvcVolumeState() {
+    return get(mDacBasePath + AVC_VOLUME, AVC_VOLUME_DEFAULT);
+}
+
+int32_t DacAdvancedControl::getHifiModeState() {
+    int32_t val = get(mDacBasePath + HIFI_MODE, HIFI_MODE_DEFAULT);
+    for(const KeyValue kv : hifi_modes) {
+        if(val == std::stoi(kv.value)) {
+            return val;
+        }
+    }
+    return 0;
+}
+
 Return<int32_t> DacAdvancedControl::getFeatureValue(AdvancedFeature feature) {
     int32_t ret;
     
@@ -175,17 +191,11 @@ Return<int32_t> DacAdvancedControl::getFeatureValue(AdvancedFeature feature) {
 
     switch(feature) {
         case AdvancedFeature::AVCVolume: {
-                ret = get(mDacBasePath + AVC_VOLUME, AVC_VOLUME_DEFAULT);
+                ret = getAvcVolumeState();
                 break;
             }
         case AdvancedFeature::HifiMode: {
-                int32_t val = get(mDacBasePath + HIFI_MODE, HIFI_MODE_DEFAULT);
-                for(const KeyValue kv : hifi_modes) {
-                    if(val == std::stoi(kv.value)) {
-                        ret = val;
-                        break;
-                    }
-                }
+                ret = getHifiModeState();
                 break;
             }
         default: break;

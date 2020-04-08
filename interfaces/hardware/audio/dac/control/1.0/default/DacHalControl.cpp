@@ -64,6 +64,8 @@ DacHalControl::DacHalControl() {
         states.states = hidl_vec<KeyValue> {fstates};
         mSupportedStates.emplace(HalFeature::QuadDAC, states);
         mSupportedHalFeatures.push_back(HalFeature::QuadDAC);
+
+        setFeatureValue(HalFeature::QuadDAC, getFeatureValue(HalFeature::QuadDAC));
     });
     
     mAudioClient->getParameters(hidl_vec<hidl_string> {SET_DIGITAL_FILTER_COMMAND}, [this](Result a, const std::vector<ParameterValue>& b) {
@@ -85,6 +87,8 @@ DacHalControl::DacHalControl() {
         states.states = hidl_vec<KeyValue> {fstates};
         mSupportedStates.emplace(HalFeature::DigitalFilter, states);
         mSupportedHalFeatures.push_back(HalFeature::DigitalFilter);
+
+        setFeatureValue(HalFeature::DigitalFilter, getFeatureValue(HalFeature::DigitalFilter));
     });
 
     mAudioClient->getParameters(hidl_vec<hidl_string> {SET_SOUND_PRESET_COMMAND}, [this](Result a, const std::vector<ParameterValue>& b) {
@@ -106,6 +110,8 @@ DacHalControl::DacHalControl() {
         states.states = hidl_vec<KeyValue> {fstates};
         mSupportedStates.emplace(HalFeature::SoundPreset, states);
         mSupportedHalFeatures.push_back(HalFeature::SoundPreset);
+
+        setFeatureValue(HalFeature::SoundPreset, getFeatureValue(HalFeature::SoundPreset));
     });
 
     mAudioClient->getParameters(hidl_vec<hidl_string> {SET_LEFT_BALANCE_COMMAND}, [this](Result a, const std::vector<ParameterValue>& b) {
@@ -130,6 +136,8 @@ DacHalControl::DacHalControl() {
         states.range = range;
         mSupportedStates.emplace(HalFeature::BalanceLeft, states);
         mSupportedHalFeatures.push_back(HalFeature::BalanceLeft);
+
+        setFeatureValue(HalFeature::BalanceLeft, getFeatureValue(HalFeature::BalanceLeft));
     });
 
     mAudioClient->getParameters(hidl_vec<hidl_string> {SET_RIGHT_BALANCE_COMMAND}, [this](Result a, const std::vector<ParameterValue>& b) {
@@ -154,6 +162,8 @@ DacHalControl::DacHalControl() {
         states.range = range;
         mSupportedStates.emplace(HalFeature::BalanceRight, states);
         mSupportedHalFeatures.push_back(HalFeature::BalanceRight);
+
+        setFeatureValue(HalFeature::BalanceRight, getFeatureValue(HalFeature::BalanceRight));
     });
 }
 

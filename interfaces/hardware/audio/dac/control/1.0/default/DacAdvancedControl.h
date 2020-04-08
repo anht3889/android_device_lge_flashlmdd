@@ -58,6 +58,8 @@ class DacAdvancedControl : public IDacAdvancedControl {
     FeatureStates getHifiModeStates();
     bool writeAvcVolumeState(int32_t value);
     bool writeHifiModeState(int32_t value);
+    int32_t getAvcVolumeState();
+    int32_t getHifiModeState();
   
     std::string mDacBasePath;
     
