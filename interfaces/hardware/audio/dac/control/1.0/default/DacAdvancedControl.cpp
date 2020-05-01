@@ -56,33 +56,38 @@ static T get(const std::string& path, const T& def) {
     return file.fail() ? def : result;
 }
 
-
-
 DacAdvancedControl::DacAdvancedControl() {
     
     for(const auto & entry : std::filesystem::directory_iterator(COMMON_ES9218_PATH)) {
         // There should only be 1 subdirectory, but check anyway
         if(entry.is_directory()) {
-            mDacBasePath = entry.path();
-            if(mDacBasePath.find("0048") != std::string::npos) {
+            if(entry.path().string().find("0048") != std::string::npos) {
+                mDacBasePath = entry.path().string();
                 break;
             }
         }
     }
-    std::ofstream avc(mDacBasePath + AVC_VOLUME);
-    std::ofstream hifi(mDacBasePath + HIFI_MODE);
     
     if(mDacBasePath.empty()) {
         LOG(ERROR) << "DacAdvancedControl: No ES9218 path found, exiting...";
         return;
+    } else {
+        LOG(INFO) << "DacAdvancedControl: mDacBasePath: " << mDacBasePath;
     }
-    
-    if (avc) {
+
+    avcPath = std::string(mDacBasePath);
+    avcPath.append(AVC_VOLUME);
+    hifiPath = std::string(mDacBasePath);
+    hifiPath.append(HIFI_MODE);
+
+    if (std::filesystem::exists(avcPath)) {
+        LOG(INFO) << "DacAdvancedControl: add avc feature";
         mSupportedAdvancedFeatures.push_back(AdvancedFeature::AVCVolume);
         writeAvcVolumeState(getAvcVolumeState());
     }
     
-    if (hifi) {
+    if (std::filesystem::exists(hifiPath)) {
+        LOG(INFO) << "DacAdvancedControl: add hifi feature";
         mSupportedAdvancedFeatures.push_back(AdvancedFeature::HifiMode);
         writeHifiModeState(getHifiModeState());
     }
@@ -90,6 +95,7 @@ DacAdvancedControl::DacAdvancedControl() {
 }
 
 Return<void> DacAdvancedControl::getSupportedAdvancedFeatures(getSupportedAdvancedFeatures_cb _hidl_cb) {
+
     _hidl_cb(mSupportedAdvancedFeatures);
 
     return Void();
@@ -139,18 +145,26 @@ Return<void> DacAdvancedControl::getSupportedAdvancedFeatureValues(AdvancedFeatu
 }
 
 bool DacAdvancedControl::writeAvcVolumeState(int32_t value) {
-    set(mDacBasePath + AVC_VOLUME, value);
+    set(avcPath, (-1)*value); //we save it as the actual value, while the kernel requires a positive value
     return (bool)property_set(PROPERTY_HIFI_DAC_AVC_VOLUME, std::to_string(value).c_str());
 }
 
 bool DacAdvancedControl::writeHifiModeState(int32_t value) {
-    set(mDacBasePath + HIFI_MODE, value);
+    set(hifiPath, value);
     return (bool)property_set(PROPERTY_HIFI_DAC_MODE, std::to_string(value).c_str());
 }
 
 Return<bool> DacAdvancedControl::setFeatureValue(AdvancedFeature feature, int32_t value) {
-    
-    if(std::find(mSupportedAdvancedFeatures.begin(), mSupportedAdvancedFeatures.end(), feature) == mSupportedAdvancedFeatures.end()) {
+
+    bool feature_available = false;
+    for(AdvancedFeature f : mSupportedAdvancedFeatures) {
+        if(f == feature) {
+            LOG(INFO) << "DacAdvancedControl: setFeatureValue: feature found";
+            feature_available = true;
+            break;
+        }
+    }
+    if(!feature_available) {
         LOG(ERROR) << "DacAdvancedControl::setFeatureValue: tried to set value for unsupported Feature...";
         return false;
     }
@@ -168,23 +182,25 @@ Return<bool> DacAdvancedControl::setFeatureValue(AdvancedFeature feature, int32_
 }
 
 int32_t DacAdvancedControl::getAvcVolumeState() {
-    return get(mDacBasePath + AVC_VOLUME, AVC_VOLUME_DEFAULT);
+    return property_get_int32(PROPERTY_HIFI_DAC_AVC_VOLUME, AVC_VOLUME_DEFAULT);
 }
 
 int32_t DacAdvancedControl::getHifiModeState() {
-    int32_t val = get(mDacBasePath + HIFI_MODE, HIFI_MODE_DEFAULT);
-    for(const KeyValue kv : hifi_modes) {
-        if(val == std::stoi(kv.value)) {
-            return val;
-        }
-    }
-    return 0;
+    return property_get_int32(PROPERTY_HIFI_DAC_MODE, HIFI_MODE_DEFAULT);
 }
 
 Return<int32_t> DacAdvancedControl::getFeatureValue(AdvancedFeature feature) {
     int32_t ret;
-    
-    if(std::find(mSupportedAdvancedFeatures.begin(), mSupportedAdvancedFeatures.end(), feature) == mSupportedAdvancedFeatures.end()) {
+
+    bool feature_available = false;
+    for(AdvancedFeature f : mSupportedAdvancedFeatures) {
+        if(f == feature) {
+            LOG(INFO) << "DacAdvancedControl: getFeatureValue: feature found";
+            feature_available = true;
+            break;
+        }
+    }
+    if(!feature_available) {
         LOG(ERROR) << "DacAdvancedControl::getFeatureValue: tried to get value for unsupported Feature...";
         return -1;
     }

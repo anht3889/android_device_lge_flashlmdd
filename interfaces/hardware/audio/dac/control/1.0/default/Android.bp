@@ -17,6 +17,7 @@ cc_binary {
         "libhidlbase",
         "libhidltransport",
         "libutils",
+        "libaudiohal",
         "android.hardware.audio@2.0",
         "vendor.lge.hardware.audio.dac.control@1.0",
     ],

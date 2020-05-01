@@ -21,6 +21,7 @@
 #include <cutils/properties.h>
 
 #include <fstream>
+#include <unistd.h>
 
 namespace vendor {
 namespace lge {
@@ -30,6 +31,9 @@ namespace dac {
 namespace control {
 namespace V1_0 {
 namespace implementation {
+
+static constexpr int32_t MAX_BALANCE_VALUE = 0;
+static constexpr int32_t MIN_BALANCE_VALUE = -12;
 
 static std::vector<KeyValue> quaddac_states = {{"Off", "0"}, {"On", "1"}};
 
@@ -44,132 +48,76 @@ static std::vector<KeyValue> digital_filters = {{"Short", "0"},
                                                 {"Slow", "2"}};
 
 DacHalControl::DacHalControl() {
-    mAudioClient = IDevice::getService();
-
-    mAudioClient->getParameters(hidl_vec<hidl_string> {DAC_COMMAND}, [this](Result a, const std::vector<ParameterValue>& b) {
-        if(a != Result::OK) {
-            LOG(ERROR) << "DacHalControl: DAC not supported by HAL, exiting...";
-            return;
-        }
-        std::vector<KeyValue> fstates;
-
-        for(auto pv : b) {
-            fstates.push_back(KeyValue {
-                                pv.key.c_str(), 
-                                pv.value.c_str()
-                                });
-        }
-        
-        FeatureStates states;
-        states.states = hidl_vec<KeyValue> {fstates};
-        mSupportedStates.emplace(HalFeature::QuadDAC, states);
-        mSupportedHalFeatures.push_back(HalFeature::QuadDAC);
-
-        setFeatureValue(HalFeature::QuadDAC, getFeatureValue(HalFeature::QuadDAC));
-    });
+    mAudioDevicesFactory = android::DevicesFactoryHalInterface::create();
     
-    mAudioClient->getParameters(hidl_vec<hidl_string> {SET_DIGITAL_FILTER_COMMAND}, [this](Result a, const std::vector<ParameterValue>& b) {
-        if(a != Result::OK) {
-            LOG(ERROR) << "DacHalControl: ESS_FILTER not supported by HAL, exiting...";
-            return;
-        }
-        std::vector<KeyValue> fstates;
+    if(mAudioDevicesFactory == nullptr) {
+        LOG(ERROR) << "mAudioDevicesFactory null, aborting";
+        return;
+    }
 
-        for(auto pv : b) {
-            for(auto kv : digital_filters) {
-                if(std::string(pv.value).compare(std::string(kv.value)) == 0) {
-                    fstates.push_back(kv);
-                }
-            }
-        }
+    LOG(INFO) << "DAC Control HAL: created DevicesFactoryHalInterface";
 
-        FeatureStates states;
-        states.states = hidl_vec<KeyValue> {fstates};
-        mSupportedStates.emplace(HalFeature::DigitalFilter, states);
-        mSupportedHalFeatures.push_back(HalFeature::DigitalFilter);
+    mAudioDevicesFactory->openDevice("primary", &mAudioDevice);
 
-        setFeatureValue(HalFeature::DigitalFilter, getFeatureValue(HalFeature::DigitalFilter));
-    });
+    if(mAudioDevice == nullptr) {
+        LOG(ERROR) << "mAudioDevice null, aborting";
+        return;
+    }
+    LOG(INFO) << "DAC Control HAL: opened primary audio device";
 
-    mAudioClient->getParameters(hidl_vec<hidl_string> {SET_SOUND_PRESET_COMMAND}, [this](Result a, const std::vector<ParameterValue>& b) {
-        if(a != Result::OK) {
-            LOG(ERROR) << "DacHalControl: SOUND_PRESET not supported by HAL, exiting...";
-            return;
-        }
-        std::vector<KeyValue> fstates;
+    /* Quad DAC */
+    mSupportedHalFeatures.push_back(HalFeature::QuadDAC);
+    FeatureStates quaddac_fstates;
+    quaddac_fstates.states = hidl_vec<KeyValue> {quaddac_states};
+    for(auto e : quaddac_fstates.states) {
+        LOG(INFO) << "quaddac_fstates: " << e.name << ":" << e.value;
+    }
+    mSupportedStates.emplace(HalFeature::QuadDAC, quaddac_fstates);
 
-        for(auto pv : b) {
-            for(auto kv : sound_presets) {
-                if(std::string(pv.value).compare(std::string(kv.value)) == 0) {
-                    fstates.push_back(kv);
-                }
-            }
-        }
+    /* Digital Filter */
+    mSupportedHalFeatures.push_back(HalFeature::DigitalFilter);
+    FeatureStates digfilter_fstates;
+    digfilter_fstates.states = hidl_vec<KeyValue> {digital_filters};
+    mSupportedStates.emplace(HalFeature::DigitalFilter, digfilter_fstates);
 
-        FeatureStates states;
-        states.states = hidl_vec<KeyValue> {fstates};
-        mSupportedStates.emplace(HalFeature::SoundPreset, states);
-        mSupportedHalFeatures.push_back(HalFeature::SoundPreset);
+    /* Sound Presets */
+    mSupportedHalFeatures.push_back(HalFeature::SoundPreset);
+    FeatureStates soundpresets_fstates;
+    soundpresets_fstates.states = hidl_vec<KeyValue> {sound_presets};
+    mSupportedStates.emplace(HalFeature::SoundPreset, soundpresets_fstates);
 
-        setFeatureValue(HalFeature::SoundPreset, getFeatureValue(HalFeature::SoundPreset));
-    });
+    /* Balance Left */
+    mSupportedHalFeatures.push_back(HalFeature::BalanceLeft);
+    FeatureStates balanceleft_fstates;
+    balanceleft_fstates.range.max = MAX_BALANCE_VALUE;
+    balanceleft_fstates.range.min = MIN_BALANCE_VALUE;
+    balanceleft_fstates.range.step = 1;
+    mSupportedStates.emplace(HalFeature::BalanceLeft, balanceleft_fstates);
 
-    mAudioClient->getParameters(hidl_vec<hidl_string> {SET_LEFT_BALANCE_COMMAND}, [this](Result a, const std::vector<ParameterValue>& b) {
-        if(a != Result::OK) {
-            LOG(ERROR) << "DacHalControl: LEFT_BALANCE not supported by HAL, exiting...";
-            return;
-        }
-        FeatureStates states;
-        Range range;
-        range.min = std::stof(b[0].value);
-        range.max = std::stof(b[0].value);
+    /* Balance Right */
+    mSupportedHalFeatures.push_back(HalFeature::BalanceRight);
+    FeatureStates balanceright_fstates;
+    balanceright_fstates.range.max = MAX_BALANCE_VALUE;
+    balanceright_fstates.range.min = MIN_BALANCE_VALUE;
+    balanceright_fstates.range.step = 1;
+    mSupportedStates.emplace(HalFeature::BalanceRight, balanceright_fstates);
 
-        for(int i = 1; i < b.size(); i++) {
-            float val = std::stof(b[i].value);
-            if(val < range.min) {
-                range.min = val;
-            } else if(val > range.max) {
-                range.max = val;
-            }
-        }
-        range.step = 1;
-        states.range = range;
-        mSupportedStates.emplace(HalFeature::BalanceLeft, states);
-        mSupportedHalFeatures.push_back(HalFeature::BalanceLeft);
-
-        setFeatureValue(HalFeature::BalanceLeft, getFeatureValue(HalFeature::BalanceLeft));
-    });
-
-    mAudioClient->getParameters(hidl_vec<hidl_string> {SET_RIGHT_BALANCE_COMMAND}, [this](Result a, const std::vector<ParameterValue>& b) {
-        if(a != Result::OK) {
-            LOG(ERROR) << "DacHalControl: LEFT_BALANCE not supported by HAL, exiting...";
-            return;
-        }
-        FeatureStates states;
-        Range range;
-        range.min = std::stof(b[0].value);
-        range.max = std::stof(b[0].value);
-
-        for(int i = 1; i < b.size(); i++) {
-            float val = std::stof(b[i].value);
-            if(val < range.min) {
-                range.min = val;
-            } else if(val > range.max) {
-                range.max = val;
-            }
-        }
-        range.step = 1;
-        states.range = range;
-        mSupportedStates.emplace(HalFeature::BalanceRight, states);
-        mSupportedHalFeatures.push_back(HalFeature::BalanceRight);
-
-        setFeatureValue(HalFeature::BalanceRight, getFeatureValue(HalFeature::BalanceRight));
-    });
+    setFeatureValue(HalFeature::QuadDAC, getFeatureValue(HalFeature::QuadDAC));
+    setFeatureValue(HalFeature::DigitalFilter, getFeatureValue(HalFeature::DigitalFilter));
+    setFeatureValue(HalFeature::SoundPreset, getFeatureValue(HalFeature::SoundPreset));
+    setFeatureValue(HalFeature::BalanceLeft, getFeatureValue(HalFeature::BalanceLeft));
+    setFeatureValue(HalFeature::BalanceRight, getFeatureValue(HalFeature::BalanceRight));
 }
 
 Return<void> DacHalControl::getSupportedHalFeatures(getSupportedHalFeatures_cb _hidl_cb) {
     
-    _hidl_cb(mSupportedHalFeatures);
+    std::vector<HalFeature> ret;
+    for(auto entry : mSupportedHalFeatures) {
+        LOG(INFO) << "DacHalControl::getSupportedHalFeatures: feature: " << std::to_string(static_cast<int32_t>(entry));
+        ret.push_back(entry);
+    }
+    LOG(INFO) << "DacHalControl::getSupportedHalFeatures: size: " << std::to_string(static_cast<int32_t>(ret.size()));
+    _hidl_cb(ret);
     
     return Void();
 }
@@ -180,7 +128,7 @@ Return<void> DacHalControl::getSupportedHalFeatureValues(HalFeature feature, get
     if (it != mSupportedStates.end()) {
         _hidl_cb(it->second);
     } else {
-        LOG(ERROR) << "DacAdvancedControl::getSupportedAdvancedFeatureValues: tried to get values for unsupported Feature...";
+        LOG(ERROR) << "DacHalControl::getSupportedHalFeatureValues: tried to get values for unsupported Feature...";
     }
     
     return Void();
@@ -193,47 +141,51 @@ Return<bool> DacHalControl::setFeatureValue(HalFeature feature, int32_t value) {
         return false;
     }
 
-    ParameterValue pv;
+    KeyValue kv;
     std::string property;
     if(feature == HalFeature::QuadDAC) {
-        pv.key = DAC_COMMAND;
+        kv.name = DAC_COMMAND;
         property = PROPERTY_HIFI_DAC_ENABLED;
         if(value == 0) {
-            pv.value = SET_DAC_OFF_COMMAND;
+            kv.value = SET_DAC_OFF_COMMAND;
         } else if(value == 1) {
-            pv.value = SET_DAC_ON_COMMAND;
+            kv.value = SET_DAC_ON_COMMAND;
         }
     } else {
         switch(feature) {
             case HalFeature::DigitalFilter: {
-                pv.key = SET_DIGITAL_FILTER_COMMAND;
+                kv.name = SET_DIGITAL_FILTER_COMMAND;
                 property = PROPERTY_DIGITAL_FILTER;
                 break;
             }
             case HalFeature::SoundPreset: {
-                pv.key = SET_SOUND_PRESET_COMMAND;
+                kv.name = SET_SOUND_PRESET_COMMAND;
                 property = PROPERTY_SOUND_PRESET;
                 break;
             }
             case HalFeature::BalanceLeft: {
-                pv.key = SET_LEFT_BALANCE_COMMAND;
+                kv.name = SET_LEFT_BALANCE_COMMAND;
                 property = PROPERTY_LEFT_BALANCE;
                 break;
             }
             case HalFeature::BalanceRight: {
-                pv.key = SET_RIGHT_BALANCE_COMMAND;
+                kv.name = SET_RIGHT_BALANCE_COMMAND;
                 property = PROPERTY_RIGHT_BALANCE;
                 break;
             }
             default: return false;
         }
-        pv.value = std::to_string(value);
+        kv.value = std::to_string(value);
     }
-    
-    auto ret = mAudioClient->setParameters(hidl_vec<ParameterValue> {pv});
+    android::String8 command;
+    command.append(kv.name.c_str());
+    command.append("=");
+    command.append(kv.value.c_str());
+    LOG(INFO) << "DacHalControl::setFeatureValue: command: " << command.string();
+    android::status_t ret = mAudioDevice->setParameters(command);
 
-    if(ret == Result::OK) {
-        property_set(property.c_str(), pv.value.c_str());
+    if(ret == android::OK) {
+        property_set(property.c_str(), kv.value.c_str());
         return true;
     } else {
         return false;

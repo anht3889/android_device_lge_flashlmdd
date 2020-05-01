@@ -62,6 +62,8 @@ class DacAdvancedControl : public IDacAdvancedControl {
     int32_t getHifiModeState();
   
     std::string mDacBasePath;
+    std::string avcPath;
+    std::string hifiPath;
     
     std::vector<AdvancedFeature> mSupportedAdvancedFeatures;
     
