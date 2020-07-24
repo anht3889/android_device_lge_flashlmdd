@@ -15,3 +15,7 @@
 #
 
 BOARD_VENDOR := lge
+
+BOARD_PLAT_PRIVATE_SEPOLICY_DIR += device/lge/common/sepolicy/private
+BOARD_PLAT_PUBLIC_SEPOLICY_DIR += device/lge/common/sepolicy/public
+BOARD_SEPOLICY_DIRS += device/lge/common/sepolicy/vendor
