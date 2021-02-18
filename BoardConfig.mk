@@ -18,6 +18,9 @@ BOARD_VENDOR := lge
 
 DEVICE_PATH := device/lge/flashlmdd
 
+# APEX
+OVERRIDE_TARGET_FLATTEN_APEX := true
+
 # Architecture
 TARGET_ARCH := arm64
 TARGET_ARCH_VARIANT := armv8-2a-dotprod
