@@ -4,3 +4,6 @@ type vendor_qni_prop, property_type;
 
 type vendor_dac_control_prop, property_type;
 type vendor_vibrator_prop, property_type;
+
+type vendor_nfc_prop, property_type;
+type vendor_thermald_prop, property_type;

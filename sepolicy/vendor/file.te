@@ -30,3 +30,4 @@ type sysfs_qnovo, sysfs_type, fs_type;
 type sysfs_boot_cdsp, sysfs_type, fs_type;
 type sysfs_lge_touch, sysfs_type, fs_type;
 type sysfs_dac, sysfs_type, fs_type;
+type sysfs_fps, sysfs_type, fs_type;
