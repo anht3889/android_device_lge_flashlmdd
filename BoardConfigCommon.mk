@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 
+BOARD_VENDOR := lge
+
 COMMON_PATH := device/lge/sm8150-common
 
 COMMON_FLASH_PATH := device/lge/flash-common
@@ -209,6 +211,7 @@ VENDOR_SECURITY_PATCH := 2020-01-01
 include device/qcom/sepolicy_vndr/SEPolicy.mk
 
 BOARD_PLAT_PRIVATE_SEPOLICY_DIR += $(COMMON_PATH)/sepolicy/private
+BOARD_PLAT_PUBLIC_SEPOLICY_DIR += $(COMMON_PATH)/sepolicy/public
 BOARD_SEPOLICY_DIRS += $(COMMON_PATH)/sepolicy/vendor
 
 # Treble

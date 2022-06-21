@@ -10,3 +10,5 @@ allow init { persdata_block_device
 allow init firmware_file:filesystem getattr;
 
 allow init encrypt_block_device:blk_file write;
+
+allow init sysfs_dac:{lnk_file file} { rw_file_perms setattr };

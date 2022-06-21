@@ -1,2 +1,5 @@
 # HALs
 /system/bin/dpm                                 u:object_r:vendor_dpmd_exec:s0
+
+# Sysfs
+/sys/devices/virtual/input/lge_touch/lpwg_notify                            u:object_r:sysfs_gestures:s0

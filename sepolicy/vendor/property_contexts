@@ -29,6 +29,10 @@ vendor.lge.faceprint.use.camera                     u:object_r:vendor_camera_pro
 # Charger
 #persist.vendor.lge.service.chg_mode                 u:object_r:power_prop:s0
 
+# DAC
+persist.vendor.lge.audio.hifi_dac           u:object_r:vendor_audio_prop:s0
+persist.vendor.lge.audio.hifi_dac.          u:object_r:vendor_audio_prop:s0
+
 # LGE Misc
 ro.vendor.lge.build.target_country                  u:object_r:vendor_lge_misc_prop:s0
 ro.vendor.lge.build.target_operator                 u:object_r:vendor_lge_misc_prop:s0
@@ -64,3 +68,8 @@ vendor.lge.ril.vss.nv_init                          u:object_r:exported_radio_pr
 # USB
 ro.vendor.lge.usb.diag_count                        u:object_r:vendor_lge_usb_prop:s0
 vendor.lge.usb.state                                u:object_r:vendor_lge_usb_prop:s0
+
+# Vibrator
+ro.vibrator.hal.click.duration              u:object_r:vendor_vibrator_prop:s0
+ro.vibrator.hal.tick.duration               u:object_r:vendor_vibrator_prop:s0
+ro.vibrator.hal.heavyclick.duration         u:object_r:vendor_vibrator_prop:s0
