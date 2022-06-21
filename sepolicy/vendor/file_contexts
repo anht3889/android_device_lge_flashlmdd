@@ -30,6 +30,7 @@
 /(vendor|system/vendor)/bin/qni                                                                         u:object_r:qni_exec:s0
 /(vendor|system/vendor)/bin/qrtr-lookup                                                                 u:object_r:vendor_qrtr_exec:s0
 /(vendor|system/vendor)/bin/wigig_wiburn                                                                u:object_r:wigig_wiburn_exec:s0
+/(vendor|system/vendor)/odm/bin/hw/vendor\.lineage\.livedisplay@2\.0-service\.lge_flash                   u:object_r:hal_livedisplay_lge_msmnile_exec:s0
 
 # LG
 /mnt/vendor/absolute(/.*)?                              u:object_r:persdata_file:s0

@@ -70,6 +70,9 @@ ro.telephony.default_network=26
 # Sensors
 persist.vendor.sensors.enable.mag_filter=true
 
+# Voice assistant
+ro.opa.device_model_id=v45-deviceaction-v45-nffuo5
+
 #Wifi
 config.disable_rtt=true
 
