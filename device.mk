@@ -339,16 +339,7 @@ PRODUCT_PACKAGES += \
 
 # Lights
 PRODUCT_PACKAGES += \
-    android.hardware.light@2.0-service.lge_msmnile
-
-# LiveDisplay
-PRODUCT_PACKAGES += \
-    vendor.lineage.livedisplay@2.0-service.lge_msmnile
-
-# Livedisplay - SunlightEnhancement
-PRODUCT_PACKAGES += \
-    vendor.lineage.livedisplay@2.0-service.lge_flash \
-    vendor.lineage.livedisplay@2.0-service.lge_flash.xml
+    vendor.lineage.livedisplay@2.1-service.lge_msmnile
 
 # Media
 PRODUCT_COPY_FILES += \
