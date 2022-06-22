@@ -233,14 +233,6 @@ PRODUCT_PACKAGES += \
 PRODUCT_PACKAGES += \
     android.hardware.biometrics.fingerprint@2.1-service.lge_msmnile
 
-# FM packages
-PRODUCT_PACKAGES += \
-	libqcomfm_jni \
-	android.hardware.broadcastradio@1.0-impl \
-	FM2 \
-	qcom.fmradio \
-	qcom.fmradio.xml
-
 # GPS
 PRODUCT_COPY_FILES += \
     $(DEVICE_PATH)/gps/flp.conf:$(TARGET_COPY_OUT_VENDOR)/etc/flp.conf \
