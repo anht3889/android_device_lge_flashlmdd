@@ -226,6 +226,4 @@ WPA_SUPPLICANT_VERSION := VER_0_8_X
 QC_WIFI_HIDL_FEATURE_DUAL_AP := true
 
 # Inherit from the proprietary version
--include vendor/lge/sm8150-common/BoardConfigVendor.mk
--include vendor/lge/flash-common/BoardConfigVendor.mk
 -include vendor/lge/flashlmdd/BoardConfigVendor.mk
